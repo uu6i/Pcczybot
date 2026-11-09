@@ -1,45 +1,45 @@
 name: Build AyaPy
 
-'on':
-workflow_dispatch:
+on:
+  workflow_dispatch:
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-steps:
-  - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-  - uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: '17'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-  - uses: actions/setup-python@v5
-    with:
-      python-version: '3.13'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
 
-  - uses: gradle/actions/setup-gradle@v4
-    with:
-      gradle-version: '8.13'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
 
-  - name: Extract project
-    run: |
-      unzip AyaPy-3.0-Source.zip -d extracted
-      PROJECT=$(find extracted -name settings.gradle.kts -printf '%h\n' | head -n 1)
-      if [ -z "$PROJECT" ]; then
-        echo "Gradle project not found"
-        exit 1
-      fi
-      echo "PROJECT_DIR=$PROJECT" >> "$GITHUB_ENV"
+      - name: Extract project
+        run: |
+          unzip AyaPy-3.0-Source.zip -d .
+          PROJECT=$(find . -name settings.gradle.kts -printf '%h\n' | head -n 1)
+          if [ -z "$PROJECT" ]; then
+            echo "Gradle project not found"
+            exit 1
+          fi
+          echo "PROJECT_DIR=$PROJECT" >> "$GITHUB_ENV"
 
-  - name: Build APK
-    run: |
-      cd "$PROJECT_DIR"
-      gradle --no-daemon assembleDebug
+      - name: Build APK
+        run: |
+          gradle -p "${{ env.PROJECT_DIR }}" assembleDebug --no-daemon
 
-  - uses: actions/upload-artifact@v4
-    with:
-      name: AyaPy-3.0-APK
-      path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
-      if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AyaPy-3.0-APK
+          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          
