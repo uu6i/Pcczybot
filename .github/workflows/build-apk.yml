@@ -1,11 +1,6 @@
 name: Build AyaPy 3.0
 
-'on':
-workflow_dispatch:
-push:
-paths:
-- 'AyaPy-3.0-Source.zip'
-- '.github/workflows/build-apk.yml'
+on: [workflow_dispatch]
 
 jobs:
 build:
@@ -29,7 +24,7 @@ steps:
     with:
       gradle-version: '8.13'
 
-  - name: Extract AyaPy source
+  - name: Extract source ZIP
     run: |
       unzip -q AyaPy-3.0-Source.zip -d extracted
       PROJECT=$(find extracted -name settings.gradle.kts -printf '%h\n' | head -n 1)
@@ -39,7 +34,7 @@ steps:
       fi
       echo "PROJECT_DIR=$PROJECT" >> "$GITHUB_ENV"
 
-  - name: Build debug APK
+  - name: Build APK
     run: |
       cd "$PROJECT_DIR"
       gradle --no-daemon assembleDebug
