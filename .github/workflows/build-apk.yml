@@ -1,6 +1,6 @@
 name: Build AyaPy 3.0
 
-on:
+'on':
 workflow_dispatch:
 push:
 paths:
@@ -32,16 +32,21 @@ steps:
   - name: Extract AyaPy source
     run: |
       unzip -q AyaPy-3.0-Source.zip -d extracted
-      test -f extracted/AyaPy-Ultimate/settings.gradle.kts
+      PROJECT=$(find extracted -name settings.gradle.kts -printf '%h\n' | head -n 1)
+      if [ -z "$PROJECT" ]; then
+        echo "Android project not found"
+        exit 1
+      fi
+      echo "PROJECT_DIR=$PROJECT" >> "$GITHUB_ENV"
 
   - name: Build debug APK
     run: |
-      cd extracted/AyaPy-Ultimate
+      cd "$PROJECT_DIR"
       gradle --no-daemon assembleDebug
 
   - name: Upload APK
     uses: actions/upload-artifact@v4
     with:
       name: AyaPy-3.0-APK
-      path: extracted/AyaPy-Ultimate/app/build/outputs/apk/debug/*.apk
+      path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
       if-no-files-found: error
